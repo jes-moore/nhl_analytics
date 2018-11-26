@@ -6,6 +6,42 @@ from plotly.offline import iplot
 from itertools import chain
 import numpy as np
 
+def plot_goal_ratio(shot_boxes):
+    ## Data
+    goal_ratio_data = go.Scatter(
+        x = shot_boxes['centroid_x'],
+        y = shot_boxes['centroid_y'],
+        mode = 'markers',
+        marker = dict(size = 10,
+                     color='rgba(255, 0, 0, 0)',
+                     symbol = 'square'),
+        text = shot_boxes['goal_ratio_text'],
+        hoverinfo = 'text',
+    )
+    data = [goal_ratio_data]
+
+    ## Layout
+    layout = go.Layout(
+    title='Goal Ratios',
+    hovermode= 'closest',
+    shapes=create_shotbox_shape(shot_boxes) + rink_shapes(),
+    yaxis=dict(range=[-100,581],
+               scaleanchor="x", 
+               scaleratio=1,
+               ticks='',
+               showticklabels=False
+              ),
+    xaxis=dict(range=[-340.5,340.5],
+               ticks='',
+               showticklabels=False
+              ),
+    height=900,
+    width=900,
+    )
+
+    #Fig and Plot
+    fig = go.Figure(data = data,layout=layout)
+    return fig
 
 def load_shooting_df():
     #Get Shot on and Against
@@ -26,8 +62,7 @@ def load_shooting_df():
     shooting_df = shooting_df.loc[shooting_df['Y']<516.5,:] #ignore shots below center ice
     return shooting_df
 
-def create_shotbox_df():
-    shooting_df = load_shooting_df()
+def create_shotbox_df(shooting_df):
     ## Convert dots to boxes that are 25 x 25.825
     x0 = [num for num in range(-250,250,25)] * 20
     x1 = [num for num in range(-225,275,25)] * 20
@@ -100,7 +135,6 @@ def create_shotbox_shape(shot_boxes):
             )
         )
     return shot_box_shapes
-
 
 def rink_shapes():    
     outer_rect_shape = dict(
