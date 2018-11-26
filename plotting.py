@@ -5,6 +5,7 @@ import plotly.graph_objs as go
 from plotly.offline import iplot
 from itertools import chain
 import numpy as np
+from datasets import *
 
 def plot_goal_ratio(shot_boxes):
     ## Data
@@ -42,25 +43,6 @@ def plot_goal_ratio(shot_boxes):
     #Fig and Plot
     fig = go.Figure(data = data,layout=layout)
     return fig
-
-def load_shooting_df():
-    #Get Shot on and Against
-    plays_df = pd.read_csv('data/game_plays.csv')
-    shooting_df = plays_df[plays_df.event.isin(['Goal','Shot'])]
-
-    #Format Shot by and Goalie
-    shooting_df.loc[:,'shot_by'] = shooting_df['description']\
-    .apply(lambda x: ' '.join(x.split()[0:2])).values
-    shooting_df.loc[:,'goalie'] = shooting_df['description']\
-    .apply(lambda x: ' '.join(x.split()[-2:])).values
-
-    ## X and Y are inverted in the dataset vs our chart
-    shooting_df.loc[:,'X'] = shooting_df['st_y'].apply(lambda x: x*500/85).values
-    shooting_df.loc[:,'Y'] = shooting_df['st_x'].apply(lambda y: y*500/85).values
-
-    shooting_df = shooting_df.loc[shooting_df['Y']>0,:] #ignore shots below center ice
-    shooting_df = shooting_df.loc[shooting_df['Y']<516.5,:] #ignore shots below center ice
-    return shooting_df
 
 def create_shotbox_df(shooting_df):
     ## Convert dots to boxes that are 25 x 25.825
@@ -136,7 +118,7 @@ def create_shotbox_shape(shot_boxes):
         )
     return shot_box_shapes
 
-def rink_shapes():    
+def rink_shapes():
     outer_rect_shape = dict(
                 type='rect',
                 xref='x',
