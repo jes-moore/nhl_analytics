@@ -23,7 +23,7 @@ def load_shooting_df():
 
     shooting_df = shooting_df.loc[shooting_df['Y']>0,:] #ignore shots below center ice
     shooting_df = shooting_df.loc[shooting_df['Y']<516.5,:] #ignore shots below center ice
-    return shooting_df_out
+    return shooting_df
 
 
 def load_expanded_shooting_df():

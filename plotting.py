@@ -44,7 +44,7 @@ def plot_goal_ratio(shot_boxes):
     fig = go.Figure(data = data,layout=layout)
     return fig
 
-def create_shotbox_df(shooting_df):
+def create_shotbox_df(shooting_df, min_goals=15, min_shots=100):
     ## Convert dots to boxes that are 25 x 25.825
     x0 = [num for num in range(-250,250,25)] * 20
     x1 = [num for num in range(-225,275,25)] * 20
@@ -76,12 +76,13 @@ def create_shotbox_df(shooting_df):
     shot_boxes['num_goals'] = num_goals
     shot_boxes['goal_ratio'] = shot_boxes['num_goals']/ shot_boxes['num_shots']
 
-    shot_boxes = shot_boxes[shot_boxes.num_goals > 10]
-    shot_boxes = shot_boxes[shot_boxes.num_shots > 50]
+    shot_boxes = shot_boxes[shot_boxes.num_goals > min_goals]
+    shot_boxes = shot_boxes[shot_boxes.num_shots > min_shots]
 
     ## Scale for Plotting
     shot_boxes['goal_ratio_colour'] = \
-    shot_boxes['goal_ratio'] / (1 * shot_boxes['goal_ratio'].max())
+    (shot_boxes['goal_ratio'] - shot_boxes['goal_ratio'].min()) /\
+    (shot_boxes['goal_ratio'].max() - shot_boxes['goal_ratio'].min())
 
     shot_boxes['num_shot_colour'] = \
     shot_boxes['num_shots'] / (1 * shot_boxes['num_shots'].max())
@@ -113,7 +114,7 @@ def create_shotbox_shape(shot_boxes):
                 x1=box['x1'],
                 y1=box['y1'],
                 line=dict(width=0),
-                fillcolor='rgba(255, 0, 0,' + str(box['num_shot_colour']) + ')' 
+                fillcolor='rgba(255, 0, 0,' + str(box['goal_ratio_colour']) + ')' 
             )
         )
     return shot_box_shapes
