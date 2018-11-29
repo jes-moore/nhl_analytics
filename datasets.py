@@ -65,6 +65,8 @@ def load_rebounds_df():
     shot_df, unique_games = load_expanded_shooting_df()
     shot_df['shotTimeDiff'] = 0
     shot_df['nextShotResult'] = 'None'
+    shot_df['nextShotX'] = 0
+    shot_df['nextShotY'] = 0
     for gameid in tqdm(unique_games):
         game_shot_df = shot_df.loc[shot_df.game_id == gameid,:].sort_values('play_num')
 
@@ -85,4 +87,8 @@ def load_rebounds_df():
         away_df['event'].shift(-1).values
         shot_df.loc[home_df.index.values,'nextShotResult'] = \
         home_df['event'].shift(-1).values
+
+        ## Add column on data from next shot
+        shot_df.loc[away_df.index.values,'nextShotX'] = away_df['X'].shift(-1).values
+        shot_df.loc[home_df.index.values,'nextShotY'] = home_df['Y'].shift(-1).values
     return shot_df

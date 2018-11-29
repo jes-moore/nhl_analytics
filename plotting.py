@@ -7,7 +7,7 @@ from itertools import chain
 import numpy as np
 from datasets import *
 
-def plot_goal_ratio(shot_boxes):
+def plot_goal_ratio(shot_boxes,title):
     ## Data
     goal_ratio_data = go.Scatter(
         x = shot_boxes['centroid_x'],
@@ -23,7 +23,7 @@ def plot_goal_ratio(shot_boxes):
 
     ## Layout
     layout = go.Layout(
-    title='Goal Ratios',
+    title=title,
     hovermode= 'closest',
     shapes=create_shotbox_shape(shot_boxes) + rink_shapes(),
     yaxis=dict(range=[-100,581],
@@ -44,7 +44,7 @@ def plot_goal_ratio(shot_boxes):
     fig = go.Figure(data = data,layout=layout)
     return fig
 
-def create_shotbox_df(shooting_df, min_goals=15, min_shots=100):
+def create_shotbox_df(shooting_df, min_goals=15, min_shots=100,to_plot = 'goal_ratio'):
     ## Convert dots to boxes that are 25 x 25.825
     x0 = [num for num in range(-250,250,25)] * 20
     x1 = [num for num in range(-225,275,25)] * 20
@@ -79,16 +79,20 @@ def create_shotbox_df(shooting_df, min_goals=15, min_shots=100):
     shot_boxes = shot_boxes[shot_boxes.num_goals > min_goals]
     shot_boxes = shot_boxes[shot_boxes.num_shots > min_shots]
 
-    ## Scale for Plotting
-    shot_boxes['goal_ratio_colour'] = \
-    (shot_boxes['goal_ratio'] - shot_boxes['goal_ratio'].min()) /\
-    (shot_boxes['goal_ratio'].max() - shot_boxes['goal_ratio'].min())
+    ## Scale for Plotting (refactor wierd column names)
+    if to_plot == 'goal_ratio':
+        shot_boxes['goal_ratio_colour'] = \
+        (shot_boxes['goal_ratio'] - shot_boxes['goal_ratio'].min()) /\
+        (shot_boxes['goal_ratio'].max() - shot_boxes['goal_ratio'].min())
+    if to_plot == 'num_goals':
+        shot_boxes['goal_ratio_colour'] = \
+        (shot_boxes['num_shots'] - shot_boxes['num_shots'].min()) /\
+        (shot_boxes['num_shots'].max() - shot_boxes['num_shots'].min())
+    if to_plot == 'num_shots':
+        shot_boxes['goal_ratio_colour'] = \
+        (shot_boxes['num_goals'] - shot_boxes['num_goals'].min()) /\
+        (shot_boxes['num_goals'].max() - shot_boxes['num_goals'].min())
 
-    shot_boxes['num_shot_colour'] = \
-    shot_boxes['num_shots'] / (1 * shot_boxes['num_shots'].max())
-
-    shot_boxes['num_goal_colour'] = \
-    np.log2(shot_boxes['num_goals']) / (1 * shot_boxes['num_goals'].max())
 
     ## Format for Plotting Hovering Data
     shot_boxes['centroid_x'] = shot_boxes['x1'] - ((shot_boxes['x1'] - shot_boxes['x0'])/2)
