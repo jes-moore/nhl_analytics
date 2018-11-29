@@ -5,6 +5,7 @@ from plotly.offline import iplot
 from itertools import chain
 import numpy as np
 from tqdm import tqdm
+import time
 
 def load_shooting_df():
     #Get Shot on and Against
@@ -12,14 +13,27 @@ def load_shooting_df():
     shooting_df = plays_df.loc[plays_df.event.isin(['Goal','Shot']),:]
 
     #Format Shot by and Goalie
-    shooting_df.loc[:,'shot_by'] = shooting_df['description']\
-    .apply(lambda x: ' '.join(x.split()[0:2])).values
-    shooting_df.loc[:,'goalie'] = shooting_df['description']\
-    .apply(lambda x: ' '.join(x.split()[-2:])).values
+    shooting_df = shooting_df.assign(shot_by = \
+    	shooting_df['description'].apply(lambda x: ' '.join(x.split()[0:2])).values)
+
+    shooting_df = shooting_df.assign(goalie = \
+    	shooting_df['description'].apply(lambda x: ' '.join(x.split()[-2:])).values)
 
     ## X and Y are inverted in the dataset vs our chart
-    shooting_df.loc[:,'X'] = shooting_df['st_y'].apply(lambda x: x*500/85).values
-    shooting_df.loc[:,'Y'] = shooting_df['st_x'].apply(lambda y: y*500/85).values
+    shooting_df = shooting_df.assign(X =\
+    	shooting_df['st_y'].apply(lambda x: x*500/85).values)
+    shooting_df = shooting_df.assign(Y =\
+    	shooting_df['st_x'].apply(lambda x: x*500/85).values)
+
+
+    # shooting_df.loc[:,'shot_by'] = shooting_df['description']\
+    # .apply(lambda x: ' '.join(x.split()[0:2])).values
+    # shooting_df.loc[:,'goalie'] = shooting_df['description']\
+    # .apply(lambda x: ' '.join(x.split()[-2:])).values
+
+    ## X and Y are inverted in the dataset vs our chart
+    # shooting_df.loc[:,'X'] = shooting_df['st_y'].apply(lambda x: x*500/85).values
+    # shooting_df.loc[:,'Y'] = shooting_df['st_x'].apply(lambda y: y*500/85).values
 
     shooting_df = shooting_df.loc[shooting_df['Y']>0,:] #ignore shots below center ice
     shooting_df = shooting_df.loc[shooting_df['Y']<516.5,:] #ignore shots below center ice
@@ -59,6 +73,7 @@ def load_expanded_shooting_df():
 	## Get unique games
 	unique_games = shot_df.game_id.unique()
 	print("Loaded {} Unique Games".format(len(unique_games)))
+	time.sleep(0.5) #For printing issue in notebooks
 	return shot_df,unique_games
 
 def load_rebounds_df():

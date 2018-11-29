@@ -84,11 +84,11 @@ def create_shotbox_df(shooting_df, min_goals=15, min_shots=100,to_plot = 'goal_r
         shot_boxes['goal_ratio_colour'] = \
         (shot_boxes['goal_ratio'] - shot_boxes['goal_ratio'].min()) /\
         (shot_boxes['goal_ratio'].max() - shot_boxes['goal_ratio'].min())
-    if to_plot == 'num_goals':
+    if to_plot == 'num_shots':
         shot_boxes['goal_ratio_colour'] = \
         (shot_boxes['num_shots'] - shot_boxes['num_shots'].min()) /\
         (shot_boxes['num_shots'].max() - shot_boxes['num_shots'].min())
-    if to_plot == 'num_shots':
+    if to_plot == 'num_goals':
         shot_boxes['goal_ratio_colour'] = \
         (shot_boxes['num_goals'] - shot_boxes['num_goals'].min()) /\
         (shot_boxes['num_goals'].max() - shot_boxes['num_goals'].min())
