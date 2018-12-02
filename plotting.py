@@ -44,6 +44,63 @@ def plot_goal_ratio(shot_boxes,title):
     fig = go.Figure(data = data,layout=layout)
     return fig
 
+
+def create_rebound_rate_df(shooting_df, min_goals=5, min_shots=10):
+    ## Convert dots to boxes that are 25 x 25.825
+    x0 = [num for num in range(-250,250,25)] * 20
+    x1 = [num for num in range(-225,275,25)] * 20
+    y0 = list(chain.from_iterable([[num]*20 for num in range(0,516500,25825)]))
+    y1 = list(chain.from_iterable([[num]*20 for num in range(25825,542325,25825)]))
+
+    shot_boxes = pd.DataFrame({'x0':x0,
+                               'x1':x1,
+                               'y0':y0,
+                               'y1':y1
+                              })
+    ## Set box size to proper dimension
+    shot_boxes['y0'] = shot_boxes['y0'].values/1000
+    shot_boxes['y1'] = shot_boxes['y1'].values/1000
+
+    ## Get num shots and num goals by box
+    num_shots = []
+    num_goals = []
+    num_rebounds = []
+    for ix,box in shot_boxes.iterrows():
+        box_df = shooting_df[(shooting_df.X >= box['x0']) & 
+                             (shooting_df.X < box['x1']) &
+                             (shooting_df.Y >= box['y0']) & 
+                             (shooting_df.Y < box['y1'])
+                            ]
+        num_shots.append(box_df.agg({'event':'count'}).values[0])
+        num_goals.append(box_df[box_df.event == 'Goal'].agg({'event':'count'}).values[0])
+        num_rebounds.append(box_df[box_df.lead_to_reb == True].shape[0])
+    
+    shot_boxes['num_shots'] = num_shots
+    shot_boxes['num_goals'] = num_goals
+    shot_boxes['num_rebounds'] = num_rebounds
+    shot_boxes['goal_ratio'] = shot_boxes['num_goals']/ shot_boxes['num_shots']
+    shot_boxes['rebound_ratio'] = shot_boxes['num_rebounds']/ shot_boxes['num_shots']
+
+    shot_boxes = shot_boxes[shot_boxes.num_goals > min_goals]
+    shot_boxes = shot_boxes[shot_boxes.num_shots > min_shots]
+
+    ## Scale for Plotting (refactor wierd column names)
+    shot_boxes['goal_ratio_colour'] = \
+    (shot_boxes['rebound_ratio'] - shot_boxes['rebound_ratio'].min()) /\
+    (shot_boxes['rebound_ratio'].max() - shot_boxes['rebound_ratio'].min())
+
+    ## Format for Plotting Hovering Data
+    shot_boxes['centroid_x'] = shot_boxes['x1'] - ((shot_boxes['x1'] - shot_boxes['x0'])/2)
+    shot_boxes['centroid_y'] = shot_boxes['y1'] - ((shot_boxes['y1'] - shot_boxes['y0'])/2)
+
+    shot_boxes['goal_ratio_text'] = \
+    'Rebound Ratio = ' + shot_boxes['rebound_ratio'].apply(lambda x:"{0:.2f}%".format(x * 100))\
+    + ' <br>Number of Shots = ' + shot_boxes['num_shots'].apply(lambda x: str(x))\
+    + ' <br>Number of Rebounds = ' + shot_boxes['num_rebounds'].apply(lambda x: str(x))\
+    + ' <br>Number of Goals = ' + shot_boxes['num_goals'].apply(lambda x: str(x))
+    return shot_boxes
+
+
 def create_shotbox_df(shooting_df, min_goals=15, min_shots=100,to_plot = 'goal_ratio'):
     ## Convert dots to boxes that are 25 x 25.825
     x0 = [num for num in range(-250,250,25)] * 20
@@ -104,6 +161,7 @@ def create_shotbox_df(shooting_df, min_goals=15, min_shots=100,to_plot = 'goal_r
     + ' <br>Number of Goals = ' + shot_boxes['num_goals'].apply(lambda x: str(x))
     return shot_boxes
 
+
 def create_shotbox_shape(shot_boxes):
     ## Convert boxes into plottable shape
     shot_box_shapes = []
@@ -122,6 +180,7 @@ def create_shotbox_shape(shot_boxes):
             )
         )
     return shot_box_shapes
+
 
 def rink_shapes():
     outer_rect_shape = dict(
