@@ -107,3 +107,36 @@ def load_rebounds_df():
         shot_df.loc[away_df.index.values,'nextShotX'] = away_df['X'].shift(-1).values
         shot_df.loc[home_df.index.values,'nextShotY'] = home_df['Y'].shift(-1).values
     return shot_df
+
+def get_seasonal_summary(game_type = 'R'):
+    seasonal_df = pd.read_csv('data/game_teams_stats.csv')
+    seasonal_df['season'] = seasonal_df['game_id'].apply(lambda x: str(x)[0:4])
+
+    ## Load team info
+    team_info = pd.read_csv('data/team_info.csv')
+    team_info['combined_name'] = team_info.shortName + ' ' + team_info.teamName
+    team_info.drop(['franchiseId','shortName','teamName','abbreviation','link'],
+                   axis = 1,inplace=True)
+
+    ## Load playoff/reg season
+    type_df = pd.read_csv('data/game.csv')[['game_id','type']]
+
+    ## Merge DF's and Count wins/losses
+    seasonal_df = seasonal_df.merge(team_info)
+    seasonal_df = seasonal_df.merge(type_df)
+    seasonal_df['win'] = seasonal_df.won == True
+    seasonal_df['loss'] = seasonal_df.won == False
+
+    seasonal_df = seasonal_df.groupby(['season','combined_name','type']).agg('sum').reset_index()
+    seasonal_df.drop(['game_id','team_id','won'],inplace=True, axis=1)
+    seasonal_df = seasonal_df[seasonal_df.season != '2012']
+
+    ## Analyse game type
+    if game_type == 'R':
+        seasonal_df = seasonal_df[seasonal_df.type == 'R']
+    elif game_type == 'P':
+        seasonal_df = seasonal_df[seasonal_df.type == 'R']
+    else:
+        print("Failed type")
+        return
+    return seasonal_df
