@@ -76,6 +76,7 @@ def load_expanded_shooting_df():
 	time.sleep(0.5) #For printing issue in notebooks
 	return shot_df,unique_games
 
+
 def load_rebounds_df():
     shot_df, unique_games = load_expanded_shooting_df()
     shot_df['shotTimeDiff'] = 0
@@ -108,7 +109,8 @@ def load_rebounds_df():
         shot_df.loc[home_df.index.values,'nextShotY'] = home_df['Y'].shift(-1).values
     return shot_df
 
-def get_seasonal_summary(game_type = 'R'):
+
+def get_seasonal_summary(game_type = None):
     seasonal_df = pd.read_csv('data/game_teams_stats.csv')
     seasonal_df['season'] = seasonal_df['game_id'].apply(lambda x: str(x)[0:4])
 
@@ -136,7 +138,4 @@ def get_seasonal_summary(game_type = 'R'):
         seasonal_df = seasonal_df[seasonal_df.type == 'R']
     elif game_type == 'P':
         seasonal_df = seasonal_df[seasonal_df.type == 'R']
-    else:
-        print("Failed type")
-        return
     return seasonal_df
