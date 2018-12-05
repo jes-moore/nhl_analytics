@@ -1,7 +1,7 @@
-## Plotting Libraries
+# Plotting Libraries
 from plotting import *
 
-## Dashboard Libraries
+# Dashboard Libraries
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
@@ -17,31 +17,37 @@ shot_boxes = create_shotbox_df(shooting_df)
 ## Main App Layout and Graphing
 app.layout = html.Div([
     # html.H1('NHL Analytics'),
-    html.Div([
-        html.Div([
-            # html.H3('Column 1'),
-            dcc.Graph(
-                id='eg1',
-                figure=plot_goal_ratio(shot_boxes),
-                config={"displaylogo": False}
-                )], className="six columns"),
-        html.Div([
-            # html.H3('Column 2'),
-            dcc.Graph(
-                id='eg2',
-                figure=plot_goal_ratio(shot_boxes),
-                config={"displaylogo": False}
-                )], className="six columns"),
-        ], className="row"),
+    html.Div(
+        [
+            html.Div(
+                [
+                    # html.H3('Column 1'),
+                    dcc.Graph(
+                        id='eg1',
+                        figure=plot_goal_ratio(shot_boxes),
+                        config={"displaylogo": False})
+                ],
+                className="six columns"),
+            html.Div(
+                [
+                    # html.H3('Column 2'),
+                    dcc.Graph(
+                        id='eg2',
+                        figure=plot_goal_ratio(shot_boxes),
+                        config={"displaylogo": False})
+                ],
+                className="six columns"),
+        ],
+        className="row"),
     html.Div(id='container')
-    ])
+])
 
 ## Callbacks
 
 # @app.callback(
 #     Output('eg1', 'figure'),
 #     [],
-#     [   
+#     [
 #         State('eg1', 'figure'),
 #         State('eg1', 'hoverData'),
 #     ],
@@ -62,8 +68,6 @@ app.layout = html.Div([
 #         eg1['data'][-1]['y'] = [data_to_highlight['y'][hover_pt_idx]]
 
 #     return eg1
-
-
 
 if __name__ == '__main__':
     app.run_server(debug=True)
